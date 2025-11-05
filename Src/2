@@ -1,1 +1,111 @@
+using System;
+using System.IO;
+using System.Drawing;
+
+//Для работы кода в ссылки проекта нужно добавить System.Drawing версия 4.0.0.0
+class ImageConverter
+{
+    static void Main()
+    {
+        Console.WriteLine("Конвертор изображений");
+        Console.WriteLine("Поддерживаемые форматы: PNG, JPG");
+
+        while (true)
+        {
+            ShowMenu();
+            string action = Console.ReadLine();
+
+            if (action == "1")
+            {
+                ConvertImage();
+            }
+            else if (action == "3")
+            {
+                Console.WriteLine("Выход из программы...");
+                break;
+            }
+            else
+            {
+                Console.WriteLine("Неверный выбор! Попробуйте снова.\n");
+            }
+        }
+    }
+
+    static void ShowMenu()
+    {
+        Console.WriteLine("\nВыберите действие:");
+        Console.WriteLine("1 - Конвертировать изображение");
+        Console.WriteLine("2 - Переместить изображение (Функция в разработке)");
+        Console.WriteLine("3 - Выход");
+        Console.Write("Ваш выбор: ");
+    }
+
+    static void ConvertImage()
+    {
+        Console.WriteLine("\nКонвертация изображения");
+
+        //Путь к исходному файлу
+        Console.Write("Путь к изображению должен выглядеть похожим образом: C:\\Users\\user\\Desktop\\УП Маленом картинки2\\visual_studio.jpg\nВведите путь к исходному файлу: ");
+        string sourcePath = Console.ReadLine();
+
+        //Проверка формата входящего изображения
+        string extension = Path.GetExtension(sourcePath).ToLower();
+        if (extension != ".png" && extension != ".jpg")
+        {
+            Console.WriteLine("Ошибка: Поддерживаются только файлы PNG и JPG!");
+            return;
+        }
+
+        //Выбор формата изображения
+        Console.WriteLine("Выберите формат изображения:");
+        Console.WriteLine("1 - JPG");
+        Console.WriteLine("2 - PNG");
+        Console.Write("Ваш выбор: ");
+        string formatChoice = Console.ReadLine();
+
+        string formatExtension;//Переменная для изменения формата изображения
+        if (formatChoice == "1")
+        {
+            formatExtension = ".jpg";
+        }
+        else if (formatChoice == "2")
+        {
+            formatExtension = ".png";
+        }
+        else
+        {
+            Console.WriteLine("Ошибка: Неверный выбор формата!");
+            return;
+        }
+
+        //Проверка на совпадение форматов
+        if (extension == formatExtension)
+        {
+            Console.WriteLine("Ошибка: Исходный и целевой форматы совпадают!");
+            return;
+        }
+
+        //Создание пути для нового файла
+        string directory = Path.GetDirectoryName(sourcePath);
+        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourcePath);
+        string newFilePath = Path.Combine(directory, fileNameWithoutExtension + formatExtension);
+
+        //Конвертация изображения
+        //Изображение с новым расширением создается в том же месте что и первоначальный файл
+        using (Image image = Image.FromFile(sourcePath))
+        {
+            if (formatExtension == ".jpg")
+            {
+                image.Save(newFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+            }
+            else if (formatExtension == ".png")
+            {
+                image.Save(newFilePath, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        Console.WriteLine($"Успех! Файл конвертирован: {newFilePath}");
+            
+    }    
+}
 
