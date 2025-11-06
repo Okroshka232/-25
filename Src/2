@@ -1,26 +1,30 @@
+//Для работы кода в ссылки проекта нужно добавить System.Drawing версия 4.0.0.0
 using System;
 using System.IO;
 using System.Drawing;
 
-//Для работы кода в ссылки проекта нужно добавить System.Drawing версия 4.0.0.0
-//И удалить строку №4: using static System.Net.Mime.MediaTypeNames; которая создается автоматически
+
 class ImageConverter
 {
     static void Main()
     {
-        Console.WriteLine("Конвертор изображений");
+        Console.WriteLine("Конвертор и перемещатель изображений");
         Console.WriteLine("Поддерживаемые форматы: PNG, JPG");
 
         while (true)
         {
             ShowMenu();
-            string action = Console.ReadLine();
+            string choice = Console.ReadLine();
 
-            if (action == "1")
+            if (choice == "1")
             {
                 ConvertImage();
             }
-            else if (action == "3")
+            else if (choice == "2")
+            {
+                MoveImage();
+            }
+            else if (choice == "3")
             {
                 Console.WriteLine("Выход из программы...");
                 break;
@@ -36,20 +40,31 @@ class ImageConverter
     {
         Console.WriteLine("\nВыберите действие:");
         Console.WriteLine("1 - Конвертировать изображение");
-        Console.WriteLine("2 - Переместить изображение (Функция в разработке)");
+        Console.WriteLine("2 - Переместить изображение");
         Console.WriteLine("3 - Выход");
         Console.Write("Ваш выбор: ");
     }
 
     static void ConvertImage()
     {
+        
         Console.WriteLine("\nКонвертация изображения");
 
-        //Путь к исходному файлу
         Console.Write("Путь к изображению должен выглядеть похожим образом: C:\\Users\\user\\Desktop\\УП Маленом картинки2\\visual_studio.jpg\nВведите путь к исходному файлу: ");
         string sourcePath = Console.ReadLine();
 
-        //Проверка формата входящего изображения
+        if (string.IsNullOrEmpty(sourcePath))
+        {
+            Console.WriteLine("Ошибка: Путь не может быть пустым!");
+            return;
+        }
+
+        if (!File.Exists(sourcePath))
+        {
+            Console.WriteLine("Ошибка: Файл не существует!");
+            return;
+        }
+
         string extension = Path.GetExtension(sourcePath).ToLower();
         if (extension != ".png" && extension != ".jpg")
         {
@@ -57,21 +72,20 @@ class ImageConverter
             return;
         }
 
-        //Выбор формата изображения
-        Console.WriteLine("Выберите формат изображения:");
+        Console.WriteLine("Выберите целевой формат:");
         Console.WriteLine("1 - JPG");
         Console.WriteLine("2 - PNG");
         Console.Write("Ваш выбор: ");
         string formatChoice = Console.ReadLine();
 
-        string formatExtension;//Переменная для изменения формата изображения
+        string targetExtension;
         if (formatChoice == "1")
         {
-            formatExtension = ".jpg";
+            targetExtension = ".jpg";
         }
         else if (formatChoice == "2")
         {
-            formatExtension = ".png";
+            targetExtension = ".png";
         }
         else
         {
@@ -79,34 +93,104 @@ class ImageConverter
             return;
         }
 
-        //Проверка на совпадение форматов
-        if (extension == formatExtension)
+        if (extension == targetExtension)
         {
             Console.WriteLine("Ошибка: Исходный и целевой форматы совпадают!");
             return;
         }
 
-        //Создание пути для нового файла
         string directory = Path.GetDirectoryName(sourcePath);
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourcePath);
-        string newFilePath = Path.Combine(directory, fileNameWithoutExtension + formatExtension);
+        string newFilePath = Path.Combine(directory, fileNameWithoutExtension + targetExtension);
 
-        //Конвертация изображения
-        //Изображение с новым расширением создается в том же месте что и первоначальный файл
-        using (Image image = Image.FromFile(sourcePath))
+        if (File.Exists(newFilePath))
         {
-            if (formatExtension == ".jpg")
-            {
-                image.Save(newFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
-            }
-            else if (formatExtension == ".png")
-            {
-                image.Save(newFilePath, System.Drawing.Imaging.ImageFormat.Png);
-            }
+            Console.WriteLine("Ошибка: Файл с таким именем уже существует!");
+            return;
         }
 
-        Console.WriteLine($"Успех! Файл конвертирован: {newFilePath}");
-            
-    }    
-}
+        try
+        {
+            using (Image image = Image.FromFile(sourcePath))
+            {
+                if (targetExtension == ".jpg")
+                {
+                    image.Save(newFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                }
+                else if (targetExtension == ".png")
+                {
+                    image.Save(newFilePath, System.Drawing.Imaging.ImageFormat.Png);
+                }
+            }
 
+            Console.WriteLine($"Успех! Файл конвертирован: {newFilePath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при конвертации: {ex.Message}");
+            return;
+        }
+    }
+
+    static void MoveImage()
+    {
+        Console.WriteLine("\n--- Перемещение изображения ---");
+
+        Console.Write("Введите путь к исходному файлу: ");
+        string sourcePath = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(sourcePath))
+        {
+            Console.WriteLine("Ошибка: Путь не может быть пустым!");
+            return;
+        }
+
+        if (!File.Exists(sourcePath))
+        {
+            Console.WriteLine("Ошибка: Файл не существует!");
+            return;
+        }
+
+        string extension = Path.GetExtension(sourcePath).ToLower();
+        if (extension != ".png" && extension != ".jpg")
+        {
+            Console.WriteLine("Ошибка: Поддерживаются только файлы PNG и JPG!");
+            return;
+        }
+
+        Console.Write("Введите путь к целевой папке: ");
+        string targetFolder = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(targetFolder))
+        {
+            Console.WriteLine("Ошибка: Путь к папке не может быть пустым!");
+            return;
+        }
+
+        if (!Directory.Exists(targetFolder))
+        {
+            Console.WriteLine("Ошибка: Целевая папка не существует!");
+            return;
+        }
+
+        string fileName = Path.GetFileName(sourcePath);
+        string destinationPath = Path.Combine(targetFolder, fileName);
+
+        if (File.Exists(destinationPath))
+        {
+            Console.WriteLine("Ошибка: Файл с таким именем уже существует в целевой папке!");
+            return;
+        }
+
+        try
+        {
+            File.Move(sourcePath, destinationPath);
+            Console.WriteLine($"Успех! Файл перемещен: {destinationPath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при перемещении: {ex.Message}");
+            return;
+        }
+    }
+}
